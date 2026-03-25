@@ -22,9 +22,7 @@ struct histogram {
 
   int &get(int i) { return data[i]; }
 
-  void print_total(std::ostream &str) {
-    str << "total:" << accumulate(data.begin(), data.end(), 0) << "\n";
-  }
+  void print_total(std::ostream &str) { str << "total:" << accumulate(data.begin(), data.end(), 0) << "\n"; }
 
   void print_bins(std::ostream &str) {
     for (size_t i = 0; i < data.size(); ++i)
@@ -48,8 +46,7 @@ void compute(int num_threads, int sample_count, histogram &h, int num_bins) {
   int scount = sample_count / num_threads;
   std::vector<std::vector<int>> datas(num_threads, std::vector<int>(10, 0));
   for (int tid = 0; tid < num_threads; ++tid) {
-    threads.push_back(
-        std::thread(worker, scount, std::ref(datas[tid]), num_bins));
+    threads.push_back(std::thread(worker, scount, std::ref(datas[tid]), num_bins));
   }
   for (auto &t : threads) {
     t.join();
@@ -81,8 +78,7 @@ int main(int argc, char **argv) {
   auto t2 = chrono::high_resolution_clock::now();
 
   if (print_level >= 0)
-    cout << "Bins: " << num_bins << ", sample size: " << sample_count
-         << ", threads: " << num_threads << endl;
+    cout << "Bins: " << num_bins << ", sample size: " << sample_count << ", threads: " << num_threads << endl;
   if (print_level >= 3)
     h.print_bins(cout);
   if (print_level >= 1)

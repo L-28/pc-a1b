@@ -65,3 +65,4 @@ int main(int argc, char **argv)
 	if ( print_level >= 1 ) h.print_total(cout);
 	if ( print_level >= 2 || print_level == -1 ) cout << chrono::duration<double>(t2 - t1).count() << endl;
 }
+

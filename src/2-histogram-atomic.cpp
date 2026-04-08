@@ -31,6 +31,7 @@ struct histogram {
 	}
 };
 
+mutex m;
 void worker(int sample_count, histogram& h, int num_bins)
 {
 	long count = 0.0;
@@ -39,7 +40,9 @@ void worker(int sample_count, histogram& h, int num_bins)
 
 	while (sample_count--) {
 		int next = gen();
+		m.lock();
 		h.add(next);
+		m.unlock();
 		count++;
 	}
 }

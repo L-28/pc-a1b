@@ -40,10 +40,10 @@ struct histogram {
 };
 
 mutex mtx;
-void worker(int sample_count, vector<int>& h, int num_bins, histogram& hist)
+void worker(int sample_count, histogram& hist, int num_bins)
 {
 	generator gen(num_bins);
-
+	vector<int> h(num_bins, 0);
 	while (sample_count--) {
 		int next = gen();
 		++h[next];
@@ -63,7 +63,7 @@ void compute(int num_threads, int sample_count, histogram& h, int num_bins){
     int scount = sample_count/num_threads;
     std::vector<std::vector<int>> datas(num_threads, std::vector<int>(num_bins, 0));
     for(int tid = 0; tid < num_threads; ++tid){
-		threads.push_back(std::thread(worker, scount, std::ref(datas[tid]), num_bins, std::ref(h)));
+		threads.push_back(std::thread(worker, scount, std::ref(h), num_bins));
 	}
 	// auto setup = chrono::high_resolution_clock::now();
 	for(auto& t : threads){

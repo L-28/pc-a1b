@@ -56,7 +56,6 @@ void worker(int sample_count, histogram& hist, int num_bins)
 }
 
 void compute(int num_threads, int sample_count, histogram& h, int num_bins){
-    num_threads *= 4;
     // auto start = chrono::high_resolution_clock::now();
     vector<std::thread> threads;
     threads.reserve(num_threads);
@@ -69,12 +68,6 @@ void compute(int num_threads, int sample_count, histogram& h, int num_bins){
 	for(auto& t : threads){
         t.join();
     }
-    // auto working = chrono::high_resolution_clock::now();
-    // for(int it = 0; it < datas.size(); it++){
-    //     for(int ite = 0; ite < datas[it].size(); ite++){
-    //         h.set_add(ite, datas[it][ite]);
-    //     }
-    // }
     // auto finish = chrono::high_resolution_clock::now();
     // cout << "\nSetup: " << setup-start << "\nWork: " << working-setup << "\nFinish: " << finish-working << endl;
 	return;

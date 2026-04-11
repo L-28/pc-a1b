@@ -31,8 +31,7 @@ struct histogram {
 	}
 };
 
-mutex m;
-void worker(int sample_count, histogram& h, int num_bins)
+void worker(int sample_count, std::vector<std::atomic<int>>& h, int num_bins)
 {
 	long count = 0.0;
 
@@ -40,11 +39,29 @@ void worker(int sample_count, histogram& h, int num_bins)
 
 	while (sample_count--) {
 		int next = gen();
-		m.lock();
-		h.add(next);
-		m.unlock();
-		count++;
+		++h[next];
 	}
+}
+
+void compute(int num_threads, int sample_count, histogram& h, int num_bins){
+  vector<std::thread> threads;
+  threads.reserve(num_threads);
+  int scount = sample_count/num_threads;
+	std::vector<std::atomic<int>> datas(num_bins);
+	for(auto& i : datas){
+		i = 0;
+	}
+
+  for(int tid = 0; tid < num_threads; ++tid){
+		threads.push_back(std::thread(worker, scount, std::ref(datas), num_bins));
+	}
+	for(auto& t : threads){
+    t.join();
+  }
+	for (int i = 0; i < num_bins; i++) {
+    h.data[i] = datas[i].load();
+	}
+	return;
 }
 
 int main(int argc, char **argv)
@@ -60,7 +77,7 @@ int main(int argc, char **argv)
 
 	auto t1 = chrono::high_resolution_clock::now();
 
-	worker(sample_count, h, num_bins);
+	compute(num_threads, sample_count, h, num_bins);
 
 	auto t2 = chrono::high_resolution_clock::now();
 

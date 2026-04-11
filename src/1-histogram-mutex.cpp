@@ -18,6 +18,14 @@ struct histogram {
 		++data[i];
 	}
 
+	void set(int i, int v){
+	    data[i] = v;
+	}
+
+    void set_add(int i, int v){
+	    data[i] += v;
+	}
+
 	int& get(int i)	{
 		return data[i];
 	}
@@ -31,18 +39,41 @@ struct histogram {
 	}
 };
 
-void worker(int sample_count, histogram& h, int num_bins)
+mutex mtx;
+void worker(int sample_count, histogram& hist, int num_bins)
 {
-	long count = 0.0;
-
 	generator gen(num_bins);
-
+	vector<int> h(num_bins, 0);
 	while (sample_count--) {
 		int next = gen();
-		h.add(next);
-		count++;
+		++h[next];
 	}
+
+    std::lock_guard<std::mutex> lock(mtx);
+    for(int it = 0; it < h.size(); it++){
+        hist.set_add(it, h[it]);
+    }
 }
+
+void compute(int num_threads, int sample_count, histogram& h, int num_bins){
+    // auto start = chrono::high_resolution_clock::now();
+    vector<std::thread> threads;
+    threads.reserve(num_threads);
+    int scount = sample_count/num_threads;
+    std::vector<std::vector<int>> datas(num_threads, std::vector<int>(num_bins, 0));
+
+    for(int tid = 0; tid < num_threads; ++tid){
+        threads.push_back(std::thread(worker, scount, std::ref(h), num_bins));
+	}
+	// auto setup = chrono::high_resolution_clock::now();
+	for(auto& t : threads){
+        t.join();
+    }
+    // auto finish = chrono::high_resolution_clock::now();
+    // cout << "\nSetup: " << setup-start << "\nWork: " << working-setup << "\nFinish: " << finish-working << endl;
+	return;
+}
+
 
 int main(int argc, char **argv)
 {
@@ -57,7 +88,7 @@ int main(int argc, char **argv)
 
 	auto t1 = chrono::high_resolution_clock::now();
 
-	worker(sample_count, h, num_bins);
+	compute(num_threads, sample_count, h, num_bins);
 
 	auto t2 = chrono::high_resolution_clock::now();
 

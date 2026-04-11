@@ -60,7 +60,7 @@ void compute(int num_threads, int sample_count, histogram& h, int num_bins){
     vector<std::thread> threads;
     threads.reserve(num_threads);
     int scount = sample_count/num_threads;
-    std::vector<std::vector<int>> datas(num_threads, std::vector<int>(num_bins, 0));
+
     for(int tid = 0; tid < num_threads; ++tid){
 		threads.push_back(std::thread(worker, scount, std::ref(h), num_bins));
 	}
